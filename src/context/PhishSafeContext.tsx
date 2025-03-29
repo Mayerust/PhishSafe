@@ -1,5 +1,18 @@
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+
+// Add a type definition for chrome
+declare global {
+  interface Window {
+    chrome?: {
+      storage?: {
+        local: {
+          get: (keys: string[], callback: (result: any) => void) => void;
+        };
+      };
+    };
+  }
+}
 
 type AssessmentStatus = "not_started" | "in_progress" | "completed" | "failed";
 
@@ -39,10 +52,10 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
   };
 
   // Chrome extension integration - fetch the suspicious URL from storage
-  React.useEffect(() => {
+  useEffect(() => {
     // Check if we're in a browser environment with chrome API
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get(['suspiciousUrl', 'phishingScore'], (result) => {
+    if (typeof window !== 'undefined' && window.chrome && window.chrome.storage) {
+      window.chrome.storage.local.get(['suspiciousUrl', 'phishingScore'], (result) => {
         if (result.suspiciousUrl) {
           setSuspiciousUrl(result.suspiciousUrl);
         }
