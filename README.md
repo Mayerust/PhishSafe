@@ -1,69 +1,56 @@
-# Welcome to your Lovable project
 
-## Project info
+# PhishSafe Chrome Extension
 
-**URL**: https://lovable.dev/projects/572bc752-eea9-4745-ae2e-d5e79db85caa
+PhishSafe is an AI-powered Chrome extension designed to protect users from phishing attacks in real-time.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Real-time URL Monitoring**: Analyzes websites as you browse
+- **AI-based Detection**: Uses machine learning to identify potential phishing sites
+- **User-friendly Warnings**: Clean, informative warning page when threats are detected
+- **Victim Assessment**: Helps users determine if they've been compromised
+- **Guided Recovery**: Step-by-step recovery actions if credentials were exposed
 
-**Use Lovable**
+## Project Setup
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/572bc752-eea9-4745-ae2e-d5e79db85caa) and start prompting.
+### Development Environment
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+This project uses Vite with React and TypeScript for the frontend, and will eventually incorporate a Python backend for the ML model.
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Extension Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `public/manifest.json`: Chrome extension configuration
+- `public/background.js`: Background script for monitoring URLs
+- `public/content.js`: Content script for page interactions
+- `src/components/`: React components for the warning page UI
 
-**Use GitHub Codespaces**
+## Building the Extension
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```sh
+# Build the extension
+npm run build
+```
 
-## What technologies are used for this project?
+After building, you can load the extension in Chrome by:
 
-This project is built with .
+1. Opening Chrome and navigating to `chrome://extensions/`
+2. Enabling "Developer mode"
+3. Clicking "Load unpacked" and selecting the `dist` folder
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Future Development
 
-## How can I deploy this project?
+- Integration with a real ML model API for more accurate phishing detection
+- Implementation of advanced recovery tools
+- Enhanced user education about phishing threats
 
-Simply open [Lovable](https://lovable.dev/projects/572bc752-eea9-4745-ae2e-d5e79db85caa) and click on Share -> Publish.
+## License
 
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+[MIT](LICENSE)
