@@ -1,7 +1,20 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
+// Define assessment question type
+export interface AssessmentQuestion {
+  id: string;
+  question: string;
+  risk: 'high' | 'medium' | 'low';
+}
+
+// Define user answers type
+export interface UserAnswers {
+  [questionId: string]: boolean;
+}
+
 type AssessmentStatus = 'not_started' | 'in_progress' | 'completed' | 'failed';
+type RiskLevel = 'high' | 'medium' | 'low' | 'none';
 
 interface PhishSafeContextType {
   suspiciousUrl: string;
@@ -10,12 +23,46 @@ interface PhishSafeContextType {
   phishingReasons: string[];
   assessmentStatus: AssessmentStatus;
   isCredentialsLeaked: boolean;
+  assessmentQuestions: AssessmentQuestion[];
+  userAnswers: UserAnswers;
   setAssessmentStatus: (status: AssessmentStatus) => void;
   setIsCredentialsLeaked: (isLeaked: boolean) => void;
+  setUserAnswer: (questionId: string, value: boolean) => void;
+  calculateRiskLevel: () => RiskLevel;
+  completeAssessment: (passed: boolean) => void;
   checkBreachedCredentials: (email: string) => Promise<any>;
 }
 
 const PhishSafeContext = createContext<PhishSafeContextType | undefined>(undefined);
+
+// Default assessment questions
+const defaultQuestions: AssessmentQuestion[] = [
+  {
+    id: 'q1',
+    question: 'Did you enter your username and password on the suspicious site?',
+    risk: 'high'
+  },
+  {
+    id: 'q2',
+    question: 'Did you receive an email asking you to urgently log in to your account?',
+    risk: 'medium'
+  },
+  {
+    id: 'q3',
+    question: 'Did you click on a link from an email or message you weren\'t expecting?',
+    risk: 'medium'
+  },
+  {
+    id: 'q4',
+    question: 'Did the website ask for security questions or other personal information?',
+    risk: 'high'
+  },
+  {
+    id: 'q5',
+    question: 'Did the website URL look different from the official website?',
+    risk: 'low'
+  }
+];
 
 export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [suspiciousUrl, setSuspiciousUrl] = useState<string>('');
@@ -24,11 +71,13 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [phishingReasons, setPhishingReasons] = useState<string[]>([]);
   const [assessmentStatus, setAssessmentStatus] = useState<AssessmentStatus>('not_started');
   const [isCredentialsLeaked, setIsCredentialsLeaked] = useState<boolean>(false);
+  const [assessmentQuestions] = useState<AssessmentQuestion[]>(defaultQuestions);
+  const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
 
   useEffect(() => {
     // Get suspicious URL from Chrome storage
-    if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.local.get(
+    if (typeof window !== 'undefined' && 'chrome' in window && window.chrome?.storage) {
+      window.chrome.storage.local.get(
         ['suspiciousUrl', 'phishingScore', 'phishingConfidence', 'phishingReasons'],
         (result) => {
           if (result.suspiciousUrl) {
@@ -59,13 +108,58 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }, []);
 
+  // Function to set a user answer to an assessment question
+  const setUserAnswer = (questionId: string, value: boolean) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  // Function to calculate risk level based on user answers
+  const calculateRiskLevel = (): RiskLevel => {
+    const answeredQuestions = Object.keys(userAnswers).filter(id => userAnswers[id]);
+    
+    if (answeredQuestions.length === 0) {
+      return 'none';
+    }
+    
+    // Find the highest risk level among answered questions
+    const highRiskAnswered = assessmentQuestions
+      .filter(q => userAnswers[q.id] && q.risk === 'high')
+      .length > 0;
+      
+    const mediumRiskAnswered = assessmentQuestions
+      .filter(q => userAnswers[q.id] && q.risk === 'medium')
+      .length > 0;
+      
+    const lowRiskAnswered = assessmentQuestions
+      .filter(q => userAnswers[q.id] && q.risk === 'low')
+      .length > 0;
+    
+    if (highRiskAnswered) {
+      return 'high';
+    } else if (mediumRiskAnswered) {
+      return 'medium';
+    } else if (lowRiskAnswered) {
+      return 'low';
+    }
+    
+    return 'none';
+  };
+
+  // Function to complete assessment and update status
+  const completeAssessment = (passed: boolean) => {
+    setAssessmentStatus(passed ? 'completed' : 'failed');
+  };
+
   // Function to check if credentials have been leaked
   const checkBreachedCredentials = async (email: string) => {
     try {
-      if (typeof chrome !== 'undefined' && chrome.runtime) {
+      if (typeof window !== 'undefined' && 'chrome' in window && window.chrome?.runtime) {
         // Use Chrome messaging to communicate with background script
         return new Promise((resolve) => {
-          chrome.runtime.sendMessage(
+          window.chrome.runtime.sendMessage(
             { action: 'checkBreachedCredentials', email },
             (response) => {
               setIsCredentialsLeaked(response.breached);
@@ -110,8 +204,13 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
         phishingReasons,
         assessmentStatus,
         isCredentialsLeaked,
+        assessmentQuestions,
+        userAnswers,
         setAssessmentStatus,
         setIsCredentialsLeaked,
+        setUserAnswer,
+        calculateRiskLevel,
+        completeAssessment,
         checkBreachedCredentials,
       }}
     >
