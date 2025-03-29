@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
 // Define assessment question type
@@ -31,6 +30,7 @@ interface PhishSafeContextType {
   calculateRiskLevel: () => RiskLevel;
   completeAssessment: (passed: boolean) => void;
   checkBreachedCredentials: (email: string) => Promise<any>;
+  startAssessment: () => void;
 }
 
 const PhishSafeContext = createContext<PhishSafeContextType | undefined>(undefined);
@@ -75,7 +75,6 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
 
   useEffect(() => {
-    // Get suspicious URL from Chrome storage
     if (typeof window !== 'undefined' && 'chrome' in window && window.chrome?.storage) {
       window.chrome.storage.local.get(
         ['suspiciousUrl', 'phishingScore', 'phishingConfidence', 'phishingReasons'],
@@ -95,7 +94,6 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
         }
       );
     } else {
-      // Fallback for development environment
       console.log('Chrome API not available, using mock data');
       setSuspiciousUrl('https://fake-bank-login.com/auth/signin?account=verification');
       setPhishingScore(0.85);
@@ -108,7 +106,6 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }, []);
 
-  // Function to set a user answer to an assessment question
   const setUserAnswer = (questionId: string, value: boolean) => {
     setUserAnswers(prev => ({
       ...prev,
@@ -116,7 +113,6 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
     }));
   };
 
-  // Function to calculate risk level based on user answers
   const calculateRiskLevel = (): RiskLevel => {
     const answeredQuestions = Object.keys(userAnswers).filter(id => userAnswers[id]);
     
@@ -124,7 +120,6 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
       return 'none';
     }
     
-    // Find the highest risk level among answered questions
     const highRiskAnswered = assessmentQuestions
       .filter(q => userAnswers[q.id] && q.risk === 'high')
       .length > 0;
@@ -148,16 +143,18 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
     return 'none';
   };
 
-  // Function to complete assessment and update status
   const completeAssessment = (passed: boolean) => {
     setAssessmentStatus(passed ? 'completed' : 'failed');
   };
 
-  // Function to check if credentials have been leaked
+  const startAssessment = () => {
+    setAssessmentStatus('in_progress');
+    setUserAnswers({});
+  };
+
   const checkBreachedCredentials = async (email: string) => {
     try {
       if (typeof window !== 'undefined' && 'chrome' in window && window.chrome?.runtime) {
-        // Use Chrome messaging to communicate with background script
         return new Promise((resolve) => {
           window.chrome.runtime.sendMessage(
             { action: 'checkBreachedCredentials', email },
@@ -168,11 +165,9 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
           );
         });
       } else {
-        // Fallback for development environment
         console.log('Chrome API not available, using mock API call');
-        const BACKEND_URL = 'http://localhost:3000'; // Local backend server
+        const BACKEND_URL = 'http://localhost:3000';
         
-        // Call our backend API directly
         const response = await fetch(`${BACKEND_URL}/api/check-breach`, {
           method: 'POST',
           headers: {
@@ -212,6 +207,7 @@ export const PhishSafeProvider: React.FC<{ children: ReactNode }> = ({ children 
         calculateRiskLevel,
         completeAssessment,
         checkBreachedCredentials,
+        startAssessment,
       }}
     >
       {children}
