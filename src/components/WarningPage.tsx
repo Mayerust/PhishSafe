@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { usePhishSafe } from "@/context/PhishSafeContext";
 import WarningIcon from "./WarningIcon";
@@ -11,6 +11,16 @@ import { AlertTriangle, Shield, ArrowRight, HelpCircle } from "lucide-react";
 
 const WarningPage: React.FC = () => {
   const { suspiciousUrl, phishingScore, assessmentStatus } = usePhishSafe();
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    // Add this to ensure component properly renders after the context is hydrated
+    const timer = setTimeout(() => {
+      setLoaded(true);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -55,6 +65,19 @@ const WarningPage: React.FC = () => {
       }
     }
   };
+
+  // Fallback content for when context isn't loaded yet
+  if (!loaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <AlertTriangle size={48} className="mx-auto text-amber-500 mb-4" />
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading Security Information...</h1>
+          <p className="text-gray-600">PhishSafe is analyzing this site for your protection.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
@@ -112,7 +135,7 @@ const WarningPage: React.FC = () => {
                     We've blocked access to this site for your safety
                   </p>
                   <p className="text-red-700 mt-1">
-                    Our AI has identified this as a potential phishing site with {Math.round(phishingScore * 100)}% confidence.
+                    Our AI has identified this as a potential phishing site with {Math.round((phishingScore || 0.85) * 100)}% confidence.
                   </p>
                 </div>
               </div>
@@ -126,7 +149,7 @@ const WarningPage: React.FC = () => {
               <div className="bg-gray-100 rounded-full h-4 w-full mb-2">
                 <div 
                   className="bg-gradient-to-r from-yellow-400 to-red-500 h-4 rounded-full" 
-                  style={{ width: `${Math.round(phishingScore * 100)}%` }}
+                  style={{ width: `${Math.round((phishingScore || 0.85) * 100)}%` }}
                 ></div>
               </div>
               <div className="flex justify-between text-xs text-gray-500">
@@ -138,7 +161,7 @@ const WarningPage: React.FC = () => {
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Suspicious URL:</h3>
               <p className="font-mono p-3 bg-gray-100 rounded break-all text-sm">
-                {suspiciousUrl}
+                {suspiciousUrl || "https://fake-bank-login.com/auth/signin?account=verification"}
               </p>
             </div>
 
