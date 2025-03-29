@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PhishSafeProvider } from "@/context/PhishSafeContext";
 import WarningPage from "@/components/WarningPage";
+import HelpPage from "@/pages/HelpPage";
+import RecoveryPage from "@/pages/RecoveryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,6 +21,8 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<WarningPage />} />
+            <Route path="/help" element={<HelpPage />} />
+            <Route path="/recovery" element={<RecoveryPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

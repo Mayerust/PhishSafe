@@ -6,7 +6,8 @@ import WarningIcon from "./WarningIcon";
 import PhishingAssessment from "./PhishingAssessment";
 import RecoveryActions from "./RecoveryActions";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
+import { AlertTriangle, Shield, ArrowRight, HelpCircle } from "lucide-react";
 
 const WarningPage: React.FC = () => {
   const { suspiciousUrl, phishingScore, assessmentStatus } = usePhishSafe();
@@ -32,18 +33,53 @@ const WarningPage: React.FC = () => {
     },
   };
 
+  const textAnimation = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" }
+    }
+  };
+
+  const scoreIndicatorVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      opacity: 1,
+      transition: { 
+        delay: 0.4,
+        duration: 0.5,
+        type: "spring",
+        stiffness: 200
+      }
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F9FA]">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
       {/* Header */}
       <motion.header 
-        className="bg-phishsafe-blue text-white py-4 px-6"
+        className="bg-phishsafe-blue text-white py-4 px-6 shadow-md"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="container mx-auto flex items-center">
-          <Shield className="mr-2" size={24} />
-          <h1 className="text-xl font-bold">PhishSafe</h1>
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center">
+            <Shield className="mr-2" size={24} />
+            <h1 className="text-xl font-bold">PhishSafe</h1>
+          </div>
+          <Link to="/help">
+            <Button 
+              variant="ghost" 
+              className="text-white hover:bg-phishsafe-darkBlue"
+              size="sm"
+            >
+              <HelpCircle size={18} className="mr-1" />
+              <span>Help</span>
+            </Button>
+          </Link>
         </div>
       </motion.header>
 
@@ -61,7 +97,7 @@ const WarningPage: React.FC = () => {
             <WarningIcon size={80} animated={true} />
             <motion.h2 
               className="text-2xl md:text-3xl font-bold text-center mt-6 text-gray-800"
-              variants={childVariants}
+              variants={textAnimation}
             >
               Warning: Potential Phishing Attempt Detected
             </motion.h2>
@@ -81,6 +117,23 @@ const WarningPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            <motion.div 
+              className="mb-6"
+              variants={scoreIndicatorVariants}
+            >
+              <h3 className="text-lg font-semibold mb-2 text-gray-700">Threat Assessment:</h3>
+              <div className="bg-gray-100 rounded-full h-4 w-full mb-2">
+                <div 
+                  className="bg-gradient-to-r from-yellow-400 to-red-500 h-4 rounded-full" 
+                  style={{ width: `${Math.round(phishingScore * 100)}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs text-gray-500">
+                <span>Low Risk</span>
+                <span>High Risk</span>
+              </div>
+            </motion.div>
 
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Suspicious URL:</h3>
@@ -106,12 +159,14 @@ const WarningPage: React.FC = () => {
                       Always verify website URLs and be cautious about sharing personal information online.
                     </p>
                   </div>
-                  <Button 
-                    onClick={() => window.history.back()}
-                    className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white"
-                  >
-                    Return to Safety
-                  </Button>
+                  <Link to="/help">
+                    <Button 
+                      className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white flex items-center gap-2"
+                    >
+                      <span>Learn More About Phishing Protection</span>
+                      <ArrowRight size={16} />
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>

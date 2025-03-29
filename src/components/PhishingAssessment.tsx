@@ -1,9 +1,10 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { usePhishSafe } from "@/context/PhishSafeContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
 
 const PhishingAssessment: React.FC = () => {
   const { startAssessment, completeAssessment } = usePhishSafe();
@@ -35,6 +36,21 @@ const PhishingAssessment: React.FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
+  const buttonVariants = {
+    hover: { 
+      scale: 1.03,
+      transition: { 
+        duration: 0.2 
+      }
+    },
+    tap: { 
+      scale: 0.98,
+      transition: { 
+        duration: 0.1
+      }
+    }
+  };
+
   return (
     <motion.div
       variants={containerVariants}
@@ -50,12 +66,24 @@ const PhishingAssessment: React.FC = () => {
             Let us know if you entered any information or clicked on any links on this site
             so we can help protect your accounts.
           </p>
-          <Button
-            onClick={handleStart}
-            className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white"
-          >
-            Start Assessment
-          </Button>
+          <div className="flex flex-col items-center gap-4">
+            <motion.div 
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Button
+                onClick={handleStart}
+                className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white px-8"
+              >
+                Start Assessment
+              </Button>
+            </motion.div>
+            <Link to="/help" className="text-phishsafe-blue hover:underline text-sm flex items-center">
+              <span>See detailed assessment</span>
+              <ArrowRight size={14} className="ml-1" />
+            </Link>
+          </div>
         </motion.div>
       ) : (
         <motion.div variants={itemVariants} className="text-center">
@@ -66,22 +94,37 @@ const PhishingAssessment: React.FC = () => {
             This includes usernames, passwords, credit card details, or other sensitive information.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button
-              onClick={() => handleAnswer(true)}
-              variant="outline"
-              className="border-red-500 text-red-500 hover:bg-red-50 flex items-center gap-2"
+            <motion.div 
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+              className="w-full sm:w-auto"
             >
-              <XCircle size={18} />
-              <span>Yes, I entered information</span>
-            </Button>
-            <Button
-              onClick={() => handleAnswer(false)}
-              variant="outline"
-              className="border-green-500 text-green-500 hover:bg-green-50 flex items-center gap-2"
+              <Button
+                onClick={() => handleAnswer(true)}
+                variant="outline"
+                className="border-red-500 text-red-500 hover:bg-red-50 flex items-center gap-2 w-full sm:w-auto"
+              >
+                <XCircle size={18} />
+                <span>Yes, I entered information</span>
+              </Button>
+            </motion.div>
+            
+            <motion.div 
+              variants={buttonVariants}
+              whileHover="hover"
+              whileTap="tap"
+              className="w-full sm:w-auto"
             >
-              <CheckCircle size={18} />
-              <span>No, I didn't enter anything</span>
-            </Button>
+              <Button
+                onClick={() => handleAnswer(false)}
+                variant="outline"
+                className="border-green-500 text-green-500 hover:bg-green-50 flex items-center gap-2 w-full sm:w-auto"
+              >
+                <CheckCircle size={18} />
+                <span>No, I didn't enter anything</span>
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
       )}
