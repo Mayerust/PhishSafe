@@ -3,38 +3,75 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { usePhishSafe } from "@/context/PhishSafeContext";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, Lock, Shield, RotateCw } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { 
+  CheckCircle, 
+  AlertCircle, 
+  Lock, 
+  Shield, 
+  RotateCw, 
+  Mail
+} from "lucide-react";
 
 const RecoveryActions: React.FC = () => {
-  const { suspiciousUrl, isCredentialsLeaked, setIsCredentialsLeaked } = usePhishSafe();
+  const { 
+    suspiciousUrl, 
+    isCredentialsLeaked, 
+    setIsCredentialsLeaked,
+    checkBreachedCredentials 
+  } = usePhishSafe();
+  
+  const [email, setEmail] = useState<string>('');
   const [isCheckingLeaks, setIsCheckingLeaks] = useState(false);
+  const [breachResults, setBreachResults] = useState<any>(null);
   const [actionsTaken, setActionsTaken] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Mock API call to check if credentials are leaked
-  const checkCredentialsLeaked = async () => {
-    setIsCheckingLeaks(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // For demo purposes, randomly determine if credentials are leaked
-    const leaked = Math.random() > 0.5;
-    setIsCredentialsLeaked(leaked);
-    setIsCheckingLeaks(false);
-    
-    if (leaked) {
+  // Check for leaked credentials
+  const handleCheckCredentials = async () => {
+    if (!email || !email.includes('@')) {
       toast({
         variant: "destructive",
-        title: "Potential data breach detected",
-        description: "Your credentials may have been exposed in a data breach.",
+        title: "Invalid email",
+        description: "Please enter a valid email address.",
       });
-    } else {
+      return;
+    }
+    
+    setIsCheckingLeaks(true);
+    
+    try {
+      const result = await checkBreachedCredentials(email);
+      setBreachResults(result);
+      
+      if (result.breached) {
+        toast({
+          variant: "destructive",
+          title: "Potential data breach detected",
+          description: `Found ${result.breachCount} breach${result.breachCount > 1 ? 'es' : ''} containing your email.`,
+        });
+      } else if (result.error) {
+        toast({
+          variant: "destructive",
+          title: "Error checking breaches",
+          description: result.message,
+        });
+      } else {
+        toast({
+          title: "No breaches found",
+          description: "Your email doesn't appear in known data breaches.",
+        });
+      }
+    } catch (error) {
+      console.error("Error checking breaches:", error);
       toast({
-        title: "No breaches found",
-        description: "Your credentials don't appear in known data breaches.",
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to check for data breaches. Please try again.",
       });
+    } finally {
+      setIsCheckingLeaks(false);
     }
   };
 
@@ -67,11 +104,6 @@ const RecoveryActions: React.FC = () => {
     visible: { opacity: 1, y: 0 },
   };
 
-  useEffect(() => {
-    // Auto-check for leaked credentials when component mounts
-    checkCredentialsLeaked();
-  }, []);
-
   return (
     <motion.div
       variants={containerVariants}
@@ -102,33 +134,59 @@ const RecoveryActions: React.FC = () => {
           <div className="p-4 border rounded-lg bg-gray-50">
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">
-                {isCheckingLeaks ? (
-                  <RotateCw className="animate-spin text-blue-500" size={20} />
-                ) : isCredentialsLeaked ? (
-                  <AlertCircle className="text-red-500" size={20} />
-                ) : (
-                  <CheckCircle className="text-green-500" size={20} />
-                )}
+                <Mail className="text-blue-500" size={20} />
               </div>
               <div className="flex-1">
                 <h4 className="font-medium text-gray-800">Check for data breaches</h4>
                 <p className="text-sm text-gray-600 mb-3">
-                  {isCheckingLeaks 
-                    ? "Checking if your credentials appear in known data breaches..." 
-                    : isCredentialsLeaked
-                      ? "Your credentials may have been exposed in data breaches."
-                      : "Your credentials don't appear in known data breaches."}
+                  Check if your email appears in known data breaches.
                 </p>
-                {!isCheckingLeaks && (
-                  <Button
-                    onClick={() => checkCredentialsLeaked()}
-                    size="sm"
-                    variant="outline"
-                    className="text-xs"
-                  >
-                    Check again
-                  </Button>
-                )}
+                
+                <div className="flex flex-col space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={isCheckingLeaks}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleCheckCredentials}
+                      disabled={isCheckingLeaks || !email}
+                      className="whitespace-nowrap"
+                    >
+                      {isCheckingLeaks ? (
+                        <>
+                          <RotateCw className="mr-2 h-4 w-4 animate-spin" />
+                          Checking...
+                        </>
+                      ) : (
+                        "Check Now"
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {breachResults && (
+                    <div className={`p-3 rounded text-sm ${breachResults.breached ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
+                      {breachResults.message}
+                      
+                      {breachResults.breached && breachResults.breaches && breachResults.breaches.length > 0 && (
+                        <div className="mt-2">
+                          <p className="font-semibold">Compromised in these breaches:</p>
+                          <ul className="list-disc list-inside mt-1">
+                            {breachResults.breaches.map((breach: any, index: number) => (
+                              <li key={index}>
+                                {breach.name} ({breach.breachDate}) - Exposed: {breach.dataClasses.join(', ')}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -149,9 +207,7 @@ const RecoveryActions: React.FC = () => {
                 </p>
                 <Button
                   onClick={() => takeAction("Log out all sessions")}
-                  size="sm"
                   variant="outline"
-                  className="text-xs"
                   disabled={actionsTaken.includes("Log out all sessions")}
                 >
                   {actionsTaken.includes("Log out all sessions") ? "Completed" : "Take action"}
@@ -176,9 +232,7 @@ const RecoveryActions: React.FC = () => {
                 </p>
                 <Button
                   onClick={() => takeAction("Change passwords")}
-                  size="sm"
                   variant="outline"
-                  className="text-xs"
                   disabled={actionsTaken.includes("Change passwords")}
                 >
                   {actionsTaken.includes("Change passwords") ? "Completed" : "Take action"}
@@ -203,9 +257,7 @@ const RecoveryActions: React.FC = () => {
                 </p>
                 <Button
                   onClick={() => takeAction("Enable 2FA")}
-                  size="sm"
                   variant="outline"
-                  className="text-xs"
                   disabled={actionsTaken.includes("Enable 2FA")}
                 >
                   {actionsTaken.includes("Enable 2FA") ? "Completed" : "Take action"}
