@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -88,29 +89,33 @@ const RecoveryActions: React.FC = () => {
   };
   
   const returnToSafety = () => {
-    console.log("Return to safety clicked");
-    
-    if (typeof window !== 'undefined' && window.chrome?.runtime && window.chrome.runtime.sendMessage) {
-      console.log("Using Chrome extension API for navigation");
-      window.chrome.runtime.sendMessage({ action: 'returnToSafety' }, (response) => {
-        console.log("Background script response:", response);
-        
-        if (!response || response.error) {
-          console.error("Chrome API error:", response?.error || "No response");
-          window.location.href = window.location.origin + "/warning.html?status=safe";
-        }
-      });
-    } else {
-      console.log("Not running as extension, using direct URL navigation");
-      try {
-        if (window.location.href.includes("warning.html")) {
-          window.location.href = window.location.href.split('?')[0] + '?status=safe';
-        } else {
-          window.location.href = window.location.origin + "/?status=safe";
-        }
-      } catch (error) {
-        console.error("Error with direct navigation:", error);
+    try {
+      if (typeof window !== 'undefined' && window.chrome?.runtime && window.chrome.runtime.sendMessage) {
+        window.chrome.runtime.sendMessage({ action: 'returnToSafety' }, (response) => {
+          if (!response || response.error) {
+            console.error("Chrome API error:", response?.error || "No response");
+            navigateFallback();
+          }
+        });
+      } else {
+        navigateFallback();
       }
+    } catch (error) {
+      console.error("Error with navigation:", error);
+      navigateFallback();
+    }
+  };
+
+  const navigateFallback = () => {
+    try {
+      if (window.location.href.includes("warning.html")) {
+        window.location.href = window.location.href.split('?')[0] + '?status=safe';
+      } else {
+        window.location.href = window.location.origin + "/warning.html?status=safe";
+      }
+    } catch (error) {
+      console.error("Error with direct navigation:", error);
+      window.history.back();
     }
   };
 
@@ -157,7 +162,11 @@ const RecoveryActions: React.FC = () => {
         <h3 className="text-lg font-semibold mb-3 text-gray-800">Recommended recovery actions:</h3>
         
         <div className="space-y-4">
-          <div className="p-4 border rounded-lg bg-gray-50">
+          <motion.div 
+            className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">
                 <Mail className="text-blue-500" size={20} />
@@ -195,7 +204,11 @@ const RecoveryActions: React.FC = () => {
                   </div>
                   
                   {breachResults && (
-                    <div className={`p-3 rounded text-sm ${breachResults.breached ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}>
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className={`p-3 rounded text-sm ${breachResults.breached ? 'bg-red-50 text-red-800' : 'bg-green-50 text-green-800'}`}
+                    >
                       {breachResults.message}
                       
                       {breachResults.breached && breachResults.breaches && breachResults.breaches.length > 0 && (
@@ -210,14 +223,18 @@ const RecoveryActions: React.FC = () => {
                           </ul>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
           
-          <div className="p-4 border rounded-lg bg-gray-50">
+          <motion.div 
+            className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">
                 {actionsTaken.includes("Log out all sessions") ? (
@@ -240,9 +257,13 @@ const RecoveryActions: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
           
-          <div className="p-4 border rounded-lg bg-gray-50">
+          <motion.div 
+            className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">
                 {actionsTaken.includes("Change passwords") ? (
@@ -265,9 +286,13 @@ const RecoveryActions: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
           
-          <div className="p-4 border rounded-lg bg-gray-50">
+          <motion.div 
+            className="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+          >
             <div className="flex items-start">
               <div className="mr-3 mt-0.5">
                 {actionsTaken.includes("Enable 2FA") ? (
@@ -290,14 +315,19 @@ const RecoveryActions: React.FC = () => {
                 </Button>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="text-center mt-8">
+      <motion.div 
+        variants={itemVariants} 
+        className="text-center mt-8"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
         <Button 
           onClick={returnToSafety}
-          className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white"
+          className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white px-8 py-6 h-auto text-lg"
         >
           Return to Safety
         </Button>

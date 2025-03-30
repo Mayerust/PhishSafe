@@ -15,28 +15,19 @@ const WarningPage: React.FC = () => {
   const [showSafeMessage, setShowSafeMessage] = useState(false);
 
   useEffect(() => {
-    // Check for return from recovery actions
     const searchParams = new URLSearchParams(window.location.search);
     const returnStatus = searchParams.get('status');
     if (returnStatus === 'safe') {
       setShowSafeMessage(true);
     }
     
-    // Add this to ensure component properly renders after the context is hydrated
     const timer = setTimeout(() => {
       setLoaded(true);
-      // Add console logs to help with debugging
-      console.log("WarningPage loaded, context state:", {
-        suspiciousUrl,
-        phishingScore,
-        assessmentStatus
-      });
     }, 100);
     
     return () => clearTimeout(timer);
   }, [suspiciousUrl, phishingScore, assessmentStatus]);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -80,24 +71,31 @@ const WarningPage: React.FC = () => {
     }
   };
 
-  // Fallback content for when context isn't loaded yet
+  const backgroundStyle = {
+    backgroundImage: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+    backgroundAttachment: "fixed"
+  };
+
   if (!loaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+      <div className="min-h-screen flex items-center justify-center" style={backgroundStyle}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center p-8 bg-white rounded-xl shadow-lg"
+        >
           <AlertTriangle size={48} className="mx-auto text-amber-500 mb-4" />
           <h1 className="text-2xl font-bold text-gray-800 mb-2">Loading Security Information...</h1>
           <p className="text-gray-600">PhishSafe is analyzing this site for your protection.</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
-  // Safe return message after completion of recovery actions
   if (showSafeMessage) {
     return (
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
-        {/* Header */}
+      <div className="min-h-screen flex flex-col" style={backgroundStyle}>
         <motion.header 
           className="bg-phishsafe-blue text-white py-4 px-6 shadow-md"
           initial={{ y: -50, opacity: 0 }}
@@ -129,26 +127,56 @@ const WarningPage: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="bg-white rounded-xl shadow-lg p-8 max-w-2xl w-full text-center"
           >
-            <div className="bg-green-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+            <motion.div 
+              className="bg-green-50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6"
+              initial={{ scale: 0.6, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+            >
               <CheckCircle size={48} className="text-green-500" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">You're Now Safe!</h2>
-            <p className="text-lg text-gray-600 mb-6">
+            </motion.div>
+            <motion.h2 
+              className="text-3xl font-bold text-gray-800 mb-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
+              You're Now Safe!
+            </motion.h2>
+            <motion.p 
+              className="text-lg text-gray-600 mb-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+            >
               You've successfully completed the recommended security actions. Your accounts are now better protected.
-            </p>
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded text-left">
+            </motion.p>
+            <motion.div 
+              className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6 rounded text-left"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6, duration: 0.5 }}
+            >
               <p className="text-blue-700">
                 Remember to always verify website URLs and be cautious about sharing personal information online.
               </p>
-            </div>
-            <Link to="/help">
-              <Button 
-                className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white flex items-center gap-2"
-              >
-                <span>Learn More About Phishing Protection</span>
-                <ArrowRight size={16} />
-              </Button>
-            </Link>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.5 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Link to="/help">
+                <Button 
+                  className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white flex items-center gap-2"
+                >
+                  <span>Learn More About Phishing Protection</span>
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
+            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -156,8 +184,7 @@ const WarningPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#F8F9FA] to-[#EFF1F5]">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col" style={backgroundStyle}>
       <motion.header 
         className="bg-phishsafe-blue text-white py-4 px-6 shadow-md"
         initial={{ y: -50, opacity: 0 }}
@@ -191,6 +218,8 @@ const WarningPage: React.FC = () => {
         <motion.div 
           className="bg-white rounded-xl shadow-lg p-6 md:p-8 max-w-3xl mx-auto"
           variants={childVariants}
+          whileHover={{ boxShadow: "0 15px 30px rgba(0,0,0,0.12)" }}
+          transition={{ duration: 0.3 }}
         >
           <div className="flex flex-col items-center mb-6">
             <WarningIcon size={80} animated={true} />
@@ -222,11 +251,13 @@ const WarningPage: React.FC = () => {
               variants={scoreIndicatorVariants}
             >
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Threat Assessment:</h3>
-              <div className="bg-gray-100 rounded-full h-4 w-full mb-2">
-                <div 
-                  className="bg-gradient-to-r from-yellow-400 to-red-500 h-4 rounded-full" 
-                  style={{ width: `${Math.round((phishingScore || 0.85) * 100)}%` }}
-                ></div>
+              <div className="bg-gray-100 rounded-full h-4 w-full mb-2 overflow-hidden">
+                <motion.div 
+                  className="bg-gradient-to-r from-yellow-400 to-red-500 h-4"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.round((phishingScore || 0.85) * 100)}%` }}
+                  transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                ></motion.div>
               </div>
               <div className="flex justify-between text-xs text-gray-500">
                 <span>Low Risk</span>
@@ -234,14 +265,24 @@ const WarningPage: React.FC = () => {
               </div>
             </motion.div>
 
-            <div className="mb-6">
+            <motion.div 
+              className="mb-6"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
               <h3 className="text-lg font-semibold mb-2 text-gray-700">Suspicious URL:</h3>
               <p className="font-mono p-3 bg-gray-100 rounded break-all text-sm">
                 {suspiciousUrl || "https://fake-bank-login.com/auth/signin?account=verification"}
               </p>
-            </div>
+            </motion.div>
 
-            <div className="border-t border-gray-200 pt-6 mt-6">
+            <motion.div 
+              className="border-t border-gray-200 pt-6 mt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
+            >
               {assessmentStatus === "not_started" && (
                 <PhishingAssessment />
               )}
@@ -252,23 +293,33 @@ const WarningPage: React.FC = () => {
               
               {assessmentStatus === "completed" && (
                 <div className="text-center">
-                  <div className="bg-green-50 p-4 rounded-lg mb-6">
+                  <motion.div 
+                    className="bg-green-50 p-4 rounded-lg mb-6"
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                  >
                     <p className="text-green-800 font-medium">Good news! You recognized the phishing attempt.</p>
                     <p className="text-green-700 mt-2">
                       Always verify website URLs and be cautious about sharing personal information online.
                     </p>
-                  </div>
-                  <Link to="/help">
-                    <Button 
-                      className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white flex items-center gap-2"
-                    >
-                      <span>Learn More About Phishing Protection</span>
-                      <ArrowRight size={16} />
-                    </Button>
-                  </Link>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Link to="/help">
+                      <Button 
+                        className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white flex items-center gap-2"
+                      >
+                        <span>Learn More About Phishing Protection</span>
+                        <ArrowRight size={16} />
+                      </Button>
+                    </Link>
+                  </motion.div>
                 </div>
               )}
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
 

@@ -1,22 +1,15 @@
 
-// PhishSafe background script
-const BACKEND_URL = 'http://localhost:3000'; // Local backend server
+const BACKEND_URL = 'http://localhost:3000';
 
-/**
- * Detects if a URL is potentially a phishing site
- * by calling our backend API
- */
 async function detectPhishing(url) {
   try {
     console.log('Checking URL:', url);
     
-    // Skip checking the warning page itself
     if (url.includes('warning.html')) {
       console.log('Skipping check for warning page');
       return { isPhishing: false };
     }
     
-    // Call our backend API
     const response = await fetch(`${BACKEND_URL}/api/check-url`, {
       method: 'POST',
       headers: {
@@ -35,25 +28,18 @@ async function detectPhishing(url) {
     return result;
   } catch (error) {
     console.error('Error in phishing detection:', error);
-    
-    // Fallback to the mock detection if the API fails
     return mockDetectPhishing(url);
   }
 }
 
-/**
- * Mock detection for fallback (in case the backend is not available)
- */
 function mockDetectPhishing(url) {
   console.log('Using mock detection for URL:', url);
   
-  // Skip checking the warning page itself
   if (url.includes('warning.html')) {
     console.log('Skipping check for warning page');
     return { isPhishing: false };
   }
   
-  // For demonstration purposes: specific URLs will be flagged as phishing
   const knownPhishingDomains = [
     'phishing-example.com',
     'fake-bank-login.com',
@@ -61,10 +47,9 @@ function mockDetectPhishing(url) {
     'account-verify-login.com'
   ];
   
-  // For testing - if URL contains any of these keywords, flag as phishing
   const isPhishing = knownPhishingDomains.some(domain => url.includes(domain)) || 
                     (url.includes('phish') && !url.includes('phishsafe')) || 
-                    Math.random() < 0.1; // 10% random chance for testing
+                    Math.random() < 0.1;
   
   return { 
     isPhishing, 
@@ -74,15 +59,10 @@ function mockDetectPhishing(url) {
   };
 }
 
-/**
- * Checks if an email has been in a data breach
- * by calling our backend API
- */
 async function checkBreachedCredentials(email) {
   try {
     console.log('Checking breached credentials for:', email);
     
-    // Call our backend API
     const response = await fetch(`${BACKEND_URL}/api/check-breach`, {
       method: 'POST',
       headers: {
@@ -102,9 +82,8 @@ async function checkBreachedCredentials(email) {
   } catch (error) {
     console.error('Error checking breached credentials:', error);
     
-    // Fallback to mock result if the API fails
     return {
-      breached: Math.random() > 0.7, // 30% chance of mock breach
+      breached: Math.random() > 0.7,
       breachCount: Math.floor(Math.random() * 3) + 1,
       message: Math.random() > 0.7 ? 
         "Your email appears in some known data breaches. You should change your password." : 
@@ -117,14 +96,11 @@ async function checkBreachedCredentials(email) {
   }
 }
 
-// Main listener for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Only run when the page is starting to load
   if (changeInfo.status === 'loading' && tab.url && !tab.url.startsWith('chrome://')) {
     try {
       console.log("Tab updated:", tab.url);
       
-      // Skip checking the warning page itself and any variations with query params
       if (tab.url.includes('warning.html')) {
         console.log('Skipping check for warning page');
         return;
@@ -135,7 +111,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       if (result.isPhishing) {
         console.log('Phishing site detected:', tab.url);
         
-        // Store the suspicious URL and phishing info for the warning page
         chrome.storage.local.set({ 
           suspiciousUrl: tab.url,
           phishingScore: result.score,
@@ -144,7 +119,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         }, function() {
           console.log("Stored phishing data in local storage");
           
-          // Redirect to the warning page
           chrome.tabs.update(tabId, { 
             url: chrome.runtime.getURL('warning.html') 
           });
@@ -156,7 +130,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 });
 
-// Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("Message received in background script:", message);
   
@@ -167,7 +140,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.error('Error in phishing detection:', error);
         sendResponse({ isPhishing: false, error: error.message });
       });
-    return true; // Keep the message channel open for async response
+    return true;
   }
   
   if (message.action === 'checkBreachedCredentials') {
@@ -177,13 +150,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.error('Error checking breached credentials:', error);
         sendResponse({ breached: false, error: error.message });
       });
-    return true; // Keep the message channel open for async response
+    return true;
   }
   
   if (message.action === 'returnToSafety') {
     console.log("Return to safety message received");
     try {
-      // Get the sender tab ID
       const tabId = sender?.tab?.id;
       
       if (!tabId) {
@@ -192,7 +164,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return true;
       }
       
-      // Update the tab to the warning page with safe status
       chrome.tabs.update(tabId, { 
         url: chrome.runtime.getURL('warning.html?status=safe') 
       }, (tab) => {
@@ -212,11 +183,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// Add installation event listener to set up extension
 chrome.runtime.onInstalled.addListener(function() {
   console.log("PhishSafe extension installed");
   
-  // Create dynamic icons
   try {
     createExtensionIcons();
   } catch (e) {
@@ -224,8 +193,6 @@ chrome.runtime.onInstalled.addListener(function() {
   }
 });
 
-// Function to create extension icons programmatically if needed
 function createExtensionIcons() {
-  // Implementation will be handled by icons.js
   console.log("Extension icons will be created by icons.js");
 }

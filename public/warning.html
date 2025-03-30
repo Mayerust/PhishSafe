@@ -6,14 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PhishSafe - Warning</title>
   <style>
-    /* Basic reset to ensure consistent styling */
     body, html {
       margin: 0;
       padding: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       height: 100%;
       width: 100%;
-      background-color: #F8F9FA;
+      background-color: #f5f7fa;
+      background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     }
     
     #root {
@@ -21,93 +21,150 @@
       width: 100%;
     }
 
-    /* Fallback styles for immediate display */
     .fallback-container {
-      padding: 20px;
+      padding: 30px;
       text-align: center;
-      max-width: 600px;
-      margin: 100px auto;
+      max-width: 500px;
+      margin: 80px auto;
       background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      animation: slide-up 0.5s ease-out forwards;
+      opacity: 0;
+      transform: translateY(30px);
+    }
+
+    @keyframes slide-up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .warning-icon {
-      color: #d32f2f;
-      font-size: 48px;
-      margin-bottom: 20px;
+      color: #ff3b30;
+      font-size: 64px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
     }
 
     .fallback-title {
-      color: #d32f2f;
-      font-size: 24px;
+      color: #ff3b30;
+      font-size: 28px;
       margin-bottom: 16px;
+      font-weight: 700;
     }
 
     .fallback-text {
       color: #333;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      line-height: 1.5;
     }
 
     .fallback-button {
-      background-color: #3a57e8;
+      background-color: #007AFF;
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
+      padding: 12px 24px;
+      border-radius: 8px;
       cursor: pointer;
-      margin-top: 20px;
+      margin-top: 24px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,122,255,0.2);
     }
 
-    /* Loading indicator */
+    .fallback-button:hover {
+      background-color: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,122,255,0.3);
+    }
+
     .loading-spinner {
       display: inline-block;
-      width: 40px;
-      height: 40px;
-      border: 3px solid rgba(0,0,0,0.1);
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(0,122,255,0.1);
       border-radius: 50%;
-      border-top-color: #3a57e8;
+      border-top-color: #007AFF;
       animation: spin 1s ease-in-out infinite;
-      margin-bottom: 10px;
+      margin: 20px auto;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    /* Safe return message */
     .safe-container {
       display: none;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
-      max-width: 600px;
-      margin: 100px auto;
+      max-width: 500px;
+      margin: 80px auto;
       background-color: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      animation: slide-up 0.5s ease-out forwards;
     }
 
     .safe-icon {
       color: #22c55e;
-      font-size: 48px;
-      margin-bottom: 20px;
+      font-size: 64px;
+      margin-bottom: 24px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
 
     .safe-title {
       color: #22c55e;
-      font-size: 24px;
+      font-size: 28px;
       margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .icon-container {
+      background-color: rgba(255,59,48,0.1);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+
+    .safe-icon-container {
+      background-color: rgba(34,197,94,0.1);
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
     }
   </style>
 </head>
 <body>
-  <!-- Load icons.js first to ensure icons are available -->
   <script src="./icons.js"></script>
   
   <div id="root">
-    <!-- Immediate fallback content that shows while React loads -->
     <div class="fallback-container" id="fallback-warning">
-      <div class="warning-icon">⚠️</div>
+      <div class="icon-container">
+        <div class="warning-icon">⚠️</div>
+      </div>
       <h1 class="fallback-title">PhishSafe Warning</h1>
       <p class="fallback-text">A potential phishing site has been detected.</p>
       <p class="fallback-text">This site may be attempting to steal your personal information.</p>
@@ -116,9 +173,10 @@
       <button class="fallback-button" onclick="window.history.back()">Return to safety</button>
     </div>
     
-    <!-- Safe return message (hidden by default) -->
     <div class="safe-container" id="safe-message">
-      <div class="safe-icon" id="safe-icon">✅</div>
+      <div class="safe-icon-container">
+        <div class="safe-icon" id="safe-icon">✅</div>
+      </div>
       <h1 class="safe-title">You're Now Safe!</h1>
       <p class="fallback-text">You've successfully completed the recommended security actions.</p>
       <p class="fallback-text">Your accounts are now better protected.</p>
@@ -126,9 +184,7 @@
     </div>
   </div>
 
-  <!-- Add a script to check for safe status -->
   <script>
-    // Check if the URL has a safe status parameter
     function checkSafeStatus() {
       try {
         const urlParams = new URLSearchParams(window.location.search);
@@ -141,18 +197,17 @@
           document.getElementById('fallback-warning').style.display = 'none';
           document.getElementById('safe-message').style.display = 'block';
           
-          // Try to use the PhishSafe icon if available
           try {
             if (window.PhishSafeIcons && typeof window.PhishSafeIcons.createCheckIcon === 'function') {
               const checkIconElement = document.createElement('div');
-              checkIconElement.style.width = '48px';
-              checkIconElement.style.height = '48px';
-              checkIconElement.style.margin = '0 auto 20px auto';
+              checkIconElement.style.width = '64px';
+              checkIconElement.style.height = '64px';
+              checkIconElement.style.margin = '0 auto';
               
               const iconSVG = new Image();
-              iconSVG.src = window.PhishSafeIcons.createCheckIcon(48);
-              iconSVG.style.width = '48px';
-              iconSVG.style.height = '48px';
+              iconSVG.src = window.PhishSafeIcons.createCheckIcon(64);
+              iconSVG.style.width = '64px';
+              iconSVG.style.height = '64px';
               checkIconElement.appendChild(iconSVG);
               
               const safeIcon = document.getElementById('safe-icon');
@@ -170,21 +225,18 @@
       }
     }
     
-    // Check immediately and also after DOM content loaded
     checkSafeStatus();
     document.addEventListener('DOMContentLoaded', checkSafeStatus);
     
-    // Debug log to check for script execution
     console.log("PhishSafe warning.html script loaded and running");
   </script>
 
-  <!-- We need to use relative paths for Chrome extensions -->
   <script src="./vendor.js"></script>
   <script src="./main.js"></script>
   
   <noscript>
     <div style="padding: 20px; text-align: center;">
-      <h1 style="color: #d32f2f;">PhishSafe Warning</h1>
+      <h1 style="color: #ff3b30;">PhishSafe Warning</h1>
       <p>A potential phishing site has been detected.</p>
       <p>Please enable JavaScript to view detailed information.</p>
     </div>
