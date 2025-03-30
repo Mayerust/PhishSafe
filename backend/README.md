@@ -10,25 +10,25 @@ This is the backend server for the PhishSafe Chrome extension. It provides API e
 - Node.js (v14 or newer)
 - npm or yarn
 
-### Installation
+### Installation & Deployment
 
 1. Install the dependencies:
 
 ```bash
 npm install
-# or
-yarn install
 ```
 
 2. Start the server:
 
 ```bash
 npm start
-# or
-yarn start
 ```
 
 The server will run on http://localhost:3000 by default.
+
+### Note: No Build Required
+
+This is a Node.js backend application that doesn't require a build step. Simply install dependencies and run the server.
 
 ## API Endpoints
 
