@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import { usePhishSafe } from "@/context/PhishSafeContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ const RecoveryActions: React.FC = () => {
     checkBreachedCredentials 
   } = usePhishSafe();
   
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
   const [isCheckingLeaks, setIsCheckingLeaks] = useState(false);
   const [breachResults, setBreachResults] = useState<any>(null);
@@ -85,6 +87,11 @@ const RecoveryActions: React.FC = () => {
         description: `${action} has been successfully completed.`,
       });
     }
+  };
+  
+  // Return to safety with "safe" status
+  const returnToSafety = () => {
+    navigate("/?status=safe");
   };
 
   // Animation variants
@@ -270,7 +277,7 @@ const RecoveryActions: React.FC = () => {
 
       <motion.div variants={itemVariants} className="text-center mt-8">
         <Button 
-          onClick={() => window.history.back()}
+          onClick={returnToSafety}
           className="bg-phishsafe-blue hover:bg-phishsafe-darkBlue text-white"
         >
           Return to Safety

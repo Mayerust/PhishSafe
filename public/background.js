@@ -105,6 +105,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Only run when the page is starting to load
   if (changeInfo.status === 'loading' && tab.url && !tab.url.startsWith('chrome://')) {
     try {
+      console.log("Tab updated:", tab.url);
       const result = await detectPhishing(tab.url);
       
       if (result.isPhishing) {
@@ -116,11 +117,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
           phishingScore: result.score,
           phishingConfidence: result.confidence,
           phishingReasons: result.reasons
-        });
-        
-        // Redirect to the warning page
-        chrome.tabs.update(tabId, { 
-          url: chrome.runtime.getURL('warning.html') 
+        }, function() {
+          console.log("Stored phishing data in local storage");
+          
+          // Redirect to the warning page
+          chrome.tabs.update(tabId, { 
+            url: chrome.runtime.getURL('warning.html') 
+          });
         });
       }
     } catch (error) {
@@ -131,6 +134,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("Message received in background script:", message);
+  
   if (message.action === 'checkUrl') {
     detectPhishing(message.url)
       .then(result => sendResponse(result))
@@ -150,4 +155,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     return true; // Keep the message channel open for async response
   }
+});
+
+// Add installation event listener to set up extension
+chrome.runtime.onInstalled.addListener(function() {
+  console.log("PhishSafe extension installed");
 });
