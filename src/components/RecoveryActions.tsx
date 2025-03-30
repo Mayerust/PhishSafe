@@ -91,6 +91,20 @@ const RecoveryActions: React.FC = () => {
   
   // Return to safety with "safe" status
   const returnToSafety = () => {
+    console.log("Return to safety clicked, navigating to /?status=safe");
+    
+    // Handle direct URL change first (for Chrome extension environment)
+    try {
+      if (window.location.search.includes("warning.html")) {
+        // We're in the Chrome extension environment
+        window.location.href = window.location.href.split('?')[0] + '?status=safe';
+        return;
+      }
+    } catch (error) {
+      console.error("Error handling direct URL change:", error);
+    }
+    
+    // Use React Router navigation as fallback
     navigate("/?status=safe");
   };
 

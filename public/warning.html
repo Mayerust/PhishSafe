@@ -13,6 +13,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       height: 100%;
       width: 100%;
+      background-color: #F8F9FA;
     }
     
     #root {
@@ -57,19 +58,113 @@
       cursor: pointer;
       margin-top: 20px;
     }
+
+    /* Loading indicator */
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      border-top-color: #3a57e8;
+      animation: spin 1s ease-in-out infinite;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Safe return message */
+    .safe-container {
+      display: none;
+      padding: 20px;
+      text-align: center;
+      max-width: 600px;
+      margin: 100px auto;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .safe-icon {
+      color: #22c55e;
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .safe-title {
+      color: #22c55e;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
+  <!-- Load icons.js first to ensure icons are available -->
+  <script src="./icons.js"></script>
+  
   <div id="root">
     <!-- Immediate fallback content that shows while React loads -->
-    <div class="fallback-container">
+    <div class="fallback-container" id="fallback-warning">
       <div class="warning-icon">⚠️</div>
       <h1 class="fallback-title">PhishSafe Warning</h1>
       <p class="fallback-text">A potential phishing site has been detected.</p>
       <p class="fallback-text">This site may be attempting to steal your personal information.</p>
+      <div class="loading-spinner" id="loading-spinner"></div>
+      <p class="fallback-text">Loading detailed information...</p>
       <button class="fallback-button" onclick="window.history.back()">Return to safety</button>
     </div>
+    
+    <!-- Safe return message (hidden by default) -->
+    <div class="safe-container" id="safe-message">
+      <div class="safe-icon" id="safe-icon">✅</div>
+      <h1 class="safe-title">You're Now Safe!</h1>
+      <p class="fallback-text">You've successfully completed the recommended security actions.</p>
+      <p class="fallback-text">Your accounts are now better protected.</p>
+      <button class="fallback-button" onclick="window.close()">Close</button>
+    </div>
   </div>
+
+  <!-- Add a script to check for safe status -->
+  <script>
+    // Check if the URL has a safe status parameter
+    function checkSafeStatus() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        
+        if (status === 'safe') {
+          document.getElementById('fallback-warning').style.display = 'none';
+          document.getElementById('safe-message').style.display = 'block';
+          
+          // Try to use the PhishSafe icon if available
+          try {
+            if (window.PhishSafeIcons && typeof window.PhishSafeIcons.createCheckIcon === 'function') {
+              const checkIconElement = document.createElement('img');
+              checkIconElement.src = window.PhishSafeIcons.createCheckIcon(48);
+              checkIconElement.style.width = '48px';
+              checkIconElement.style.height = '48px';
+              
+              const safeIcon = document.getElementById('safe-icon');
+              if (safeIcon) {
+                safeIcon.innerHTML = '';
+                safeIcon.appendChild(checkIconElement);
+              }
+            }
+          } catch (iconError) {
+            console.error('Error setting safe icon:', iconError);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking safe status:', error);
+      }
+    }
+    
+    // Check immediately and also after DOM content loaded
+    checkSafeStatus();
+    document.addEventListener('DOMContentLoaded', checkSafeStatus);
+  </script>
 
   <!-- We need to use relative paths for Chrome extensions -->
   <script src="./vendor.js"></script>

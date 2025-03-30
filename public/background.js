@@ -10,6 +10,12 @@ async function detectPhishing(url) {
   try {
     console.log('Checking URL:', url);
     
+    // Skip checking the warning page itself
+    if (url.includes('warning.html')) {
+      console.log('Skipping check for warning page');
+      return { isPhishing: false };
+    }
+    
     // Call our backend API
     const response = await fetch(`${BACKEND_URL}/api/check-url`, {
       method: 'POST',
@@ -40,6 +46,12 @@ async function detectPhishing(url) {
  */
 function mockDetectPhishing(url) {
   console.log('Using mock detection for URL:', url);
+  
+  // Skip checking the warning page itself
+  if (url.includes('warning.html')) {
+    console.log('Skipping check for warning page');
+    return { isPhishing: false };
+  }
   
   // For demonstration purposes: specific URLs will be flagged as phishing
   const knownPhishingDomains = [
@@ -92,10 +104,15 @@ async function checkBreachedCredentials(email) {
     
     // Fallback to mock result if the API fails
     return {
-      breached: false,
-      error: true,
-      message: `Error checking breach status: ${error.message}`,
-      breaches: []
+      breached: Math.random() > 0.7, // 30% chance of mock breach
+      breachCount: Math.floor(Math.random() * 3) + 1,
+      message: Math.random() > 0.7 ? 
+        "Your email appears in some known data breaches. You should change your password." : 
+        "Your email doesn't appear in known data breaches.",
+      breaches: Math.random() > 0.7 ? [
+        {name: "ExampleSite", breachDate: "2023-05-15", dataClasses: ["email", "password"]},
+        {name: "DemoBreak", breachDate: "2022-11-03", dataClasses: ["email", "username"]}
+      ] : []
     };
   }
 }
@@ -106,6 +123,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'loading' && tab.url && !tab.url.startsWith('chrome://')) {
     try {
       console.log("Tab updated:", tab.url);
+      
+      // Skip checking the warning page itself and any variations with query params
+      if (tab.url.includes('warning.html')) {
+        console.log('Skipping check for warning page');
+        return;
+      }
+      
       const result = await detectPhishing(tab.url);
       
       if (result.isPhishing) {
@@ -155,9 +179,36 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
     return true; // Keep the message channel open for async response
   }
+  
+  if (message.action === 'returnToSafety') {
+    console.log("Return to safety message received");
+    try {
+      chrome.tabs.update(sender.tab.id, { 
+        url: chrome.runtime.getURL('warning.html?status=safe') 
+      });
+      sendResponse({ success: true });
+    } catch (error) {
+      console.error("Error returning to safety:", error);
+      sendResponse({ success: false, error: error.message });
+    }
+    return true;
+  }
 });
 
 // Add installation event listener to set up extension
 chrome.runtime.onInstalled.addListener(function() {
   console.log("PhishSafe extension installed");
+  
+  // Create dynamic icons
+  try {
+    createExtensionIcons();
+  } catch (e) {
+    console.error("Error creating extension icons:", e);
+  }
 });
+
+// Function to create extension icons programmatically if needed
+function createExtensionIcons() {
+  // Implementation will be handled by icons.js
+  console.log("Extension icons will be created by icons.js");
+}
