@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -15,6 +14,8 @@ import {
   Mail
 } from "lucide-react";
 
+declare const window: Window;
+
 const RecoveryActions: React.FC = () => {
   const { 
     suspiciousUrl, 
@@ -29,7 +30,6 @@ const RecoveryActions: React.FC = () => {
   const [actionsTaken, setActionsTaken] = useState<string[]>([]);
   const { toast } = useToast();
 
-  // Check for leaked credentials
   const handleCheckCredentials = async () => {
     if (!email || !email.includes('@')) {
       toast({
@@ -76,7 +76,6 @@ const RecoveryActions: React.FC = () => {
     }
   };
 
-  // Take recovery action
   const takeAction = (action: string) => {
     if (!actionsTaken.includes(action)) {
       setActionsTaken(prev => [...prev, action]);
@@ -88,31 +87,25 @@ const RecoveryActions: React.FC = () => {
     }
   };
   
-  // Return to safety with "safe" status
   const returnToSafety = () => {
     console.log("Return to safety clicked");
     
-    // Check if we're running as a Chrome extension
-    if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.sendMessage) {
+    if (typeof window !== 'undefined' && window.chrome?.runtime && window.chrome.runtime.sendMessage) {
       console.log("Using Chrome extension API for navigation");
-      chrome.runtime.sendMessage({ action: 'returnToSafety' }, (response) => {
+      window.chrome.runtime.sendMessage({ action: 'returnToSafety' }, (response) => {
         console.log("Background script response:", response);
         
         if (!response || response.error) {
           console.error("Chrome API error:", response?.error || "No response");
-          // Fallback to direct URL change
           window.location.href = window.location.origin + "/warning.html?status=safe";
         }
       });
     } else {
       console.log("Not running as extension, using direct URL navigation");
-      // For local development or when not running as an extension
       try {
         if (window.location.href.includes("warning.html")) {
-          // Directly modify URL if we're in warning.html
           window.location.href = window.location.href.split('?')[0] + '?status=safe';
         } else {
-          // Use regular URL with query parameter
           window.location.href = window.location.origin + "/?status=safe";
         }
       } catch (error) {
@@ -121,7 +114,6 @@ const RecoveryActions: React.FC = () => {
     }
   };
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
