@@ -183,10 +183,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'returnToSafety') {
     console.log("Return to safety message received");
     try {
-      chrome.tabs.update(sender.tab.id, { 
+      // Get the sender tab ID
+      const tabId = sender?.tab?.id;
+      
+      if (!tabId) {
+        console.error("No tab ID found in sender");
+        sendResponse({ success: false, error: "No tab ID found" });
+        return true;
+      }
+      
+      // Update the tab to the warning page with safe status
+      chrome.tabs.update(tabId, { 
         url: chrome.runtime.getURL('warning.html?status=safe') 
+      }, (tab) => {
+        if (chrome.runtime.lastError) {
+          console.error("Error updating tab:", chrome.runtime.lastError);
+          sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        } else {
+          console.log("Tab updated successfully:", tab);
+          sendResponse({ success: true });
+        }
       });
-      sendResponse({ success: true });
     } catch (error) {
       console.error("Error returning to safety:", error);
       sendResponse({ success: false, error: error.message });

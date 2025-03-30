@@ -134,17 +134,26 @@
         const urlParams = new URLSearchParams(window.location.search);
         const status = urlParams.get('status');
         
+        console.log("Checking URL status:", status);
+        
         if (status === 'safe') {
+          console.log("Showing safe message");
           document.getElementById('fallback-warning').style.display = 'none';
           document.getElementById('safe-message').style.display = 'block';
           
           // Try to use the PhishSafe icon if available
           try {
             if (window.PhishSafeIcons && typeof window.PhishSafeIcons.createCheckIcon === 'function') {
-              const checkIconElement = document.createElement('img');
-              checkIconElement.src = window.PhishSafeIcons.createCheckIcon(48);
+              const checkIconElement = document.createElement('div');
               checkIconElement.style.width = '48px';
               checkIconElement.style.height = '48px';
+              checkIconElement.style.margin = '0 auto 20px auto';
+              
+              const iconSVG = new Image();
+              iconSVG.src = window.PhishSafeIcons.createCheckIcon(48);
+              iconSVG.style.width = '48px';
+              iconSVG.style.height = '48px';
+              checkIconElement.appendChild(iconSVG);
               
               const safeIcon = document.getElementById('safe-icon');
               if (safeIcon) {
@@ -164,6 +173,9 @@
     // Check immediately and also after DOM content loaded
     checkSafeStatus();
     document.addEventListener('DOMContentLoaded', checkSafeStatus);
+    
+    // Debug log to check for script execution
+    console.log("PhishSafe warning.html script loaded and running");
   </script>
 
   <!-- We need to use relative paths for Chrome extensions -->
