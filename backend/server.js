@@ -1,15 +1,26 @@
 
-const express = require('express');
-const cors = require('cors');
+//const express = require('express');
+//const cors = require('cors');
 const { detectPhishing } = require('./phishing-detector');
 const { checkBreachedCredentials } = require('./breach-checker');
 
-const app = express();
+
 const PORT = 3000;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+const cors = require("cors");
+const express = require("express");
+const app = express();
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' 'inline-speculation-rules' http://localhost:* http://127.0.0.1:*;"
+  );
+  next();
+});
+
+// ppp
 
 // Routes
 app.post('/api/check-url', async (req, res) => {

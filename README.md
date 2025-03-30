@@ -99,6 +99,4 @@ npm run build
 - Implementation of advanced recovery tools
 - Enhanced user education about phishing threats
 
-## License
 
-[MIT](LICENSE)
